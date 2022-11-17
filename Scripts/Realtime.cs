@@ -2,10 +2,9 @@ using UnityEngine;
 using System;
 public class Realtime : MonoBehaviour
 {
-    public static Realtime _instance;
     [Header("Time Setup")]
-    [SerializeField] private float _timeSpeed = .7f;
-    [SerializeField] private float _startHour = 18;                 // start at 06:00PM
+    [SerializeField] private float _timeSpeed = 90;                // Speed in which time passes relative to real time.
+    [SerializeField] private float _startHour = 10;                 // start at 10:00AM
     [SerializeField] private float _sunriseHour = 6;                // sunrise at 06:AM
     [SerializeField] private float _sunsetHour = 20;                // sunset at 08:00 PM
     private DateTime _currentTime;
@@ -31,11 +30,9 @@ public class Realtime : MonoBehaviour
     public static Action OnMinutePass;
     [Tooltip("Action invoked everytime a full 'hour' pass.")]
     public static Action OnHourPass;
-
-    private void Awake() => _instance = this;
+    // Initialization
     private void Start()
     {
-        // initialization
         _currentTime = DateTime.Now.Date + TimeSpan.FromHours(_startHour);
         _currentHour = _currentTime;
         _currentMinute = _currentTime;
@@ -46,11 +43,11 @@ public class Realtime : MonoBehaviour
     }
     private void Update()
     {
-        // time
+        // Update time according to the engine.
         _currentTime = _currentTime.AddSeconds(Time.deltaTime * _timeSpeed);
         Clock = _currentTime.ToString("HH:mm");
 
-        // if there's some component listening
+        // if there's some component listening for a time change.
         if(_currentMinute.Minute != _currentTime.Minute)
         {
             OnMinutePass?.Invoke();
@@ -61,10 +58,11 @@ public class Realtime : MonoBehaviour
             }
             _currentMinute = _currentTime;
         }
-
+        
+        // Apply ambient visuals.
         VFX();
     }
-    // check fo day transition
+    // check fo daytime transition.
     private TimeSpan TimeDifference(TimeSpan _from, TimeSpan _to)
     {
         TimeSpan _diff = _to - _from;
@@ -74,6 +72,7 @@ public class Realtime : MonoBehaviour
         return _diff;
     }
 
+    // Changing visuals.
     private void VFX()
     {
         if(_currentTime.TimeOfDay > _sunriseTime && _currentTime.TimeOfDay < _sunsetTime)
@@ -109,7 +108,7 @@ public class Realtime : MonoBehaviour
         //
         RenderSettings.ambientLight = Color.Lerp(_nightAmbient, _dayAmbient, _curve.Evaluate(_dot));
 
-        // uncomment if using stary skybox
+        // // uncomment if using stary skybox
         // RenderSettings.skybox.SetColor("_SkyColor", Color.Lerp(_nightAmbient, _dayAmbient, _curve.Evaluate(_dot)));
     }
 }
